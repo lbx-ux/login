@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录验证码</title>
+</head>
+<body style="margin: 0; padding: 0;">
+<div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7fa; padding: 40px 0;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+        <div style="background-color: #4CAF50; padding: 20px; text-align: center;">
+            <h2 style="color: #ffffff; margin: 0; font-size: 24px;">安全验证</h2>
+        </div>
+        <div style="padding: 40px 30px;">
+            <p style="font-size: 16px; color: #333333; margin-top: 0;">您好：</p>
+            <p style="font-size: 15px; color: #555555; line-height: 1.6;">您正在进行登录/注册操作。您的验证码如下：</p>
+            <div style="text-align: center; margin: 35px 0;">
+                    <span th:text="${code}" style="display: inline-block; padding: 15px 40px; font-size: 32px; font-weight: bold; color: #4CAF50; background-color: #e8f5e9; border: 1px dashed #4CAF50; border-radius: 6px; letter-spacing: 8px;">
+                        123456
+                    </span>
+            </div>
+            <p style="font-size: 14px; color: #888888;">此验证码在 <strong>5 分钟</strong> 内有效。请勿将此验证码转发或泄露给任何人。</p>
+        </div>
+        <div style="background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #eeeeee;">
+            <p style="font-size: 12px; color: #aaaaaa; margin: 0;">如果这不是您的操作，请忽略此邮件。</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

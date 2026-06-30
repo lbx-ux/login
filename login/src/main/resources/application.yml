@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: login
+  mail:
+    host: smtp.qq.com
+    port: 465 # 或者 587
+    username: 2953997419@qq.com # 你的发件邮箱
+    password: gfaoukqesdjpddjf    # 注意：这里填的是邮箱的“授权码”，不是登录密码！
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            enable: true # QQ邮箱通常需要开启SSL
+  datasource:
+    url: jdbc:mysql://192.168.146.130:3306/test #连接的数据库的名字
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root #数据库账号
+    password: 123456 #数据库密码
+    servlet:
+      multipart: #与文件上传有关
+        max-file-size: 10MB #上传的最大单个文件大小
+        max-request-size: 10MB #最大请求大小（包括所有文件和表单数据）
+  data:
+    redis:
+      host: 192.168.146.130
+      port: 6379
+      password: 123456
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml #指定xml映射文件的位置
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #配置Mybatis的日志输出，会把执行的SQL打印到控制台
+    map-underscore-to-camel-case: true
+
+
+jwt:
+  # 设置jwt签名加密时使用的秘钥
+  secret-key: fjqThisIsAVerySecureAndLongSecretKey
+  # 设置jwt过期时间 2个小时
+  ttl: 7200000
+  # 设置前端传递过来的令牌名称
+  token-name: token
