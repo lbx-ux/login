@@ -1,17 +1,23 @@
 package com.fjq.login.common.config;
 
+import com.fjq.login.common.filter.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -22,15 +28,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // 禁用 CSRF（如果是前后端分离项目，通常需要禁用）
-        http.csrf(AbstractHttpConfigurer::disable)
-                // 配置请求拦截规则
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                // 禁用 Session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 放行所有的 auth 接口 (发送验证码、登录等)
-                        .requestMatchers("/api/v1/auth/**", "/api/auth/**").permitAll()
-                        // 其他所有请求都需要认证
+                        .requestMatchers(
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/send-code"
+                        ).permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                // 2. 把我们的 JWT 过滤器加到默认的用户密码认证过滤器之前
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
