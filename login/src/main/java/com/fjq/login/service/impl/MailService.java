@@ -1,6 +1,7 @@
 package com.fjq.login.service.impl;
 
 
+import com.fjq.login.common.exception.BusinessException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +47,8 @@ public class MailService {
             log.info("验证码邮件已成功发送至: {}", toEmail);
 
         } catch (MessagingException e) {
-            log.error("邮件发送失败给: {}", toEmail, e);
-            throw new RuntimeException("邮件发送失败", e);
+            log.error("邮件发送失败，目标邮箱: {}", toEmail, e);
+            throw new BusinessException(500, "邮件发送繁忙，请稍后再试");
         }
     }
 }
