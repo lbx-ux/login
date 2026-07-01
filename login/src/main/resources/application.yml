@@ -3,19 +3,24 @@ spring:
     name: login
   mail:
     host: smtp.qq.com
-    port: 465 # 或者 587
+    port: 465
     username: 2953997419@qq.com # 你的发件邮箱
-    password: gfaoukqesdjpddjf    # 注意：这里填的是邮箱的“授权码”，不是登录密码！
+    password: gfaoukqesdjpddjf    # 注意：这里填的是邮箱的”授权码”，不是登录密码！
     default-encoding: UTF-8
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
-            enable: true
-            required: true
+          # 关键点 :强制开启纯 SSL 加密通道
           ssl:
-            enable: true # QQ邮箱通常需要开启SSL
+            enable: true
+          # 关键点 ：指定使用 Java 内部的 SSL Socket 工厂来建立连接（防止 [EOF] 报错的核心）
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+          starttls:
+            enable: false
+            required: false
   datasource:
     url: jdbc:mysql://192.168.146.130:3306/test #连接的数据库的名字
     driver-class-name: com.mysql.cj.jdbc.Driver

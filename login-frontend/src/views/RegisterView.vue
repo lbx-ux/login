@@ -136,6 +136,8 @@ const codeBtnText = computed(() => {
   return '发送验证码'
 })
 
+let cooldownTimer = null
+
 // --- 验证 ---
 function validateUsername() {
   if (!form.username.trim()) {
@@ -186,6 +188,25 @@ function validateAll() {
 }
 
 // --- 发送验证码 ---
+// 从后端 429 错误消息中解析剩余等待秒数
+function parseWaitSeconds(message) {
+  const match = message && message.match(/(\d+)\s*秒/)
+  return match ? parseInt(match[1], 10) : 60
+}
+
+// 启动本地倒计时（页面刷新后丢失，但后端 Redis 锁仍然有效）
+function startCooldown(seconds) {
+  clearInterval(cooldownTimer)
+  codeCooldown.value = seconds
+  cooldownTimer = setInterval(() => {
+    codeCooldown.value--
+    if (codeCooldown.value <= 0) {
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+    }
+  }, 1000)
+}
+
 async function handleSendCode() {
   validateEmail()
   if (errors.email) return
@@ -195,17 +216,18 @@ async function handleSendCode() {
     await sendCode(form.email.trim())
     toastMessage.value = '验证码已发送，请查看邮箱'
     toastType.value = 'success'
-    // 开始倒计时
-    codeCooldown.value = 60
-    const timer = setInterval(() => {
-      codeCooldown.value--
-      if (codeCooldown.value <= 0) {
-        clearInterval(timer)
-      }
-    }, 1000)
+    startCooldown(60)
   } catch (e) {
     if (e instanceof BusinessError) {
-      errors.email = e.message
+      if (e.code === 429) {
+        // 防刷限制：从后端消息中解析剩余等待秒数
+        const seconds = parseWaitSeconds(e.message)
+        startCooldown(seconds)
+        toastMessage.value = e.message
+        toastType.value = 'warning'
+      } else {
+        errors.email = e.message
+      }
     } else {
       toastMessage.value = '发送验证码失败，请稍后再试'
       toastType.value = 'error'

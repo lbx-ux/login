@@ -26,10 +26,30 @@ public class UserServiceImpl implements UserService {
 
     // Redis中存储验证码的 Key 前缀
     private static final String CODE_PREFIX = "login:code:";
+    // Redis中存储发送频率限制的 Key 前缀
+    private static final String LIMIT_PREFIX = "login:limit:";
 
 
     @Override
     public void sendCode(String email) {
+        // =================  防刷机制（原子操作） =================
+        String limitKey = LIMIT_PREFIX + email;
+        /*
+         * setIfAbsent 尝试设置一个 Key 并在 60 秒后过期。
+         * 如果 Key 不存在：设置成功，返回 true。
+         * 如果 Key 已存在：设置失败，返回 false，说明 60 秒内已经发送过。
+         */
+        Boolean isAbsent = redisTemplate.opsForValue().setIfAbsent(limitKey, "1", 60, TimeUnit.SECONDS);
+
+        if (Boolean.FALSE.equals(isAbsent)) {
+            // 获取还剩多少秒解禁，让前端提示更友好（可选）
+            Long expire = redisTemplate.getExpire(limitKey, TimeUnit.SECONDS);
+            long waitSeconds = (expire != null && expire > 0) ? expire : 60;
+            // 抛出自定义异常，状态码可以使用 429 (Too Many Requests)
+            throw new BusinessException(429, "发送过于频繁，请 " + waitSeconds + " 秒后再试");
+        }
+
+
         User user=userMapper.selectByEmail(email);
         if(user!=null){
             throw new BusinessException(409,"该邮箱已被注册");
